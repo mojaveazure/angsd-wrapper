@@ -42,8 +42,6 @@ MIN_MAPQ=30
 N_CORES=32
 #       Determine major and minor alleles
 DO_MAJORMINOR=1
-#       Call genotypes from genotype likelihoods
-DO_GENO=32
 #       Calculate allele frequencies
 DO_MAF=1
 #       Calculate the posterior probability
@@ -79,9 +77,9 @@ MIN_IND1=4
 MIN_IND2=4
 #       Overwrite any previously generated results
 OVERRIDE=true
-#       Calculate global Fst values
-GLOBAL=true
-#       Set the sliding window size
-WIN=1000
-#       Set the step size for sliding window analysis
-STEP=500
+#       Number of sites in each chunk
+BLOCK_SIZE=20000
+#       Determine if input is absolute counts or relative frequencies
+RELATIVE=1
+#       Set method for calculating maximum likelihood
+MAX_LIKE=1

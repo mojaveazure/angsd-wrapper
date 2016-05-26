@@ -196,92 +196,59 @@ else
     fi
 fi
 
-#   Estimate joint SFS using realSFS
-echo "WRAPPER: realSFS 2dsfs..." >&2
-"${ANGSD_DIR}"/misc/realSFS "${OUT}"/"${GROUP_1}"_Intergenic.saf.idx "${OUT}"/"${GROUP_2}"_Intergenic.saf.idx \
-    -P "${N_CORES}" \
-    > "${OUT}"/2DSFS_Intergenic."${GROUP_1}"."${GROUP_2}".sfs
-
-# prepare fst
-echo "WRAPPER: realSFS fst prep..." >&2
-"${ANGSD_DIR}"/misc/realSFS \
-    fst index "${OUT}"/"${GROUP_1}"_Intergenic.saf.idx "${OUT}"/"${GROUP_2}"_Intergenic.saf.idx \
-    -sfs "${OUT}"/2DSFS_Intergenic."${GROUP_1}"."${GROUP_2}".sfs \
-    -fstout "${OUT}"/"${GROUP_1}"."${GROUP_2}"
-
-#check if user wants global Fst estimate
-if [ "${GLOBAL}"=="true" ]; then
-    echo "WRAPPER: estimating global fst..." >&2
-    "${ANGSD_DIR}"/misc/realSFS \
-        fst stats "${OUT}"/"${GROUP_1}"."${GROUP_2}".fst.idx \
-        > "${OUT}"/"${GROUP_1}"."${GROUP_2}".fst.global
-else
-    echo "WRAPPER: global fst not requested..." >&2
-fi
-
-#check if user wants windowed analysis
-if [[ -n "${WIN}" ]] && [[ -n "${STEP}" ]]; then
-    echo "WRAPPER: estimating windowed fst..." >&2
-    "${ANGSD_DIR}"/misc/realSFS \
-        fst stats2 "${OUT}"/"${GROUP_1}"."${GROUP_2}".fst.idx \
-        -win "${WIN}" \
-        -step "${STEP}" \
-        > "${OUT}"/"${GROUP_1}"."${GROUP_2}".fst.slidingwindow
-else
-    echo "WRAPPER: windowed fst not requested..." >&2
-fi
-
-#########################################################################
-# Deprecated
-#########################################################################
 #   Estimate the Fst using ngsFST
 #   First, convert our 2D SFS output to the old output for ngsPopGen
-#echo "WRAPPER: converting 2D SFS for Fst Estimations..." >&2
-#"${ANGSD_DIR}"/misc/realSFS print \
-#    "${OUT}"/"${GROUP_1}"_Intergenic.saf.idx \
-#    "${OUT}"/"${GROUP_2}"_Intergenic.saf.idx \
-#    -P "${N_CORES}" \
-#    -oldout 1
+echo "WRAPPER: converting 2D SFS for Fst Estimations..." >&2
+"${ANGSD_DIR}"/misc/realSFS print \
+   "${OUT}"/"${GROUP_1}"_Intergenic.saf.idx \
+   "${OUT}"/"${GROUP_2}"_Intergenic.saf.idx \
+   -P "${N_CORES}" \
+   -oldout 1
 
 #   Move the shared.pos.gz file to our out directory
-#mv ${OUT/2DSFS}/shared.pos.gz ${OUT}
+mv ${OUT/2DSFS}/shared.pos.gz ${OUT}
 
 #   Unzip shared.pos.gz and get the number of shared sites
-#gzip -df ${OUT}/shared.pos.gz
-#N_SITES=`wc -l < "${OUT}"/shared.pos`
+gzip -df ${OUT}/shared.pos.gz
+N_SITES=`wc -l < "${OUT}"/shared.pos`
 
 #   Generate a prior spectrum using ngs2dSFS from ngsPopGen
-#echo "WRAPPER: generating spectrum..." >&2
-#${NGS_POPGEN}/ngs2dSFS \
-#    -postfiles ${OUT}/${GROUP_1}_Intergenic.saf ${OUT}/${GROUP_2}_Intergenic.saf \
-#    -outfile ${OUT}/${GROUP_1}.${GROUP_2}.spectrum.txt \
-#    -nind ${N_IND1} ${N_IND2} \
-#    -relative ${RELATIVE} \
-#    -maxlike ${MAX_LIKE} \
-#    -block_size ${BLOCK_SIZE} \
-#    -nsites ${N_SITES}
+echo "WRAPPER: generating spectrum..." >&2
+${NGS_POPGEN}/ngs2dSFS \
+   -postfiles ${OUT}/${GROUP_1}_Intergenic.saf ${OUT}/${GROUP_2}_Intergenic.saf \
+   -outfile ${OUT}/${GROUP_1}.${GROUP_2}.spectrum.txt \
+   -nind ${N_IND1} ${N_IND2} \
+   -relative ${RELATIVE} \
+   -maxlike ${MAX_LIKE} \
+   -block_size ${BLOCK_SIZE} \
+   -nsites ${N_SITES}
 
 #   Calculate Fst using ngsFST
-#echo "WRAPPER: estimating Fst..." >&2
-#${NGS_POPGEN}/ngsFST \
-#    -postfiles ${OUT}/${GROUP_1}_Intergenic.saf ${OUT}/${GROUP_2}_Intergenic.saf \
-#    -priorfile ${OUT}/${GROUP_1}.${GROUP_2}.spectrum.txt \
-#    -nind ${N_IND1} ${N_IND2} \
-#    -block_size ${BLOCK_SIZE} \
-#    -nsites ${N_SITES} \
-#    -outfile ${OUT}/${GROUP_1}.${GROUP_2}.fst
+echo "WRAPPER: estimating Fst..." >&2
+${NGS_POPGEN}/ngsFST \
+   -postfiles ${OUT}/${GROUP_1}_Intergenic.saf ${OUT}/${GROUP_2}_Intergenic.saf \
+   -priorfile ${OUT}/${GROUP_1}.${GROUP_2}.spectrum.txt \
+   -nind ${N_IND1} ${N_IND2} \
+   -block_size ${BLOCK_SIZE} \
+   -nsites ${N_SITES} \
+   -outfile ${OUT}/${GROUP_1}.${GROUP_2}.fst
 
-#   Unzip the mafs files
-#gzip -df ${OUT}/${GROUP_1}_Intergenic.mafs.gz
-#gzip -df ${OUT}/${GROUP_2}_Intergenic.mafs.gz
+#   Unzip the mafs files to named pipes
+find "${OUT}" -type p -exec rm {} \; # Clean any old pipes
+GROUP_1_PIPE="${OUT}/${GROUP_1}_mafs.PIPE"
+GROUP_2_PIPE="${OUT}/${GROUP_2}_mafs.PIPE"
+gzip -cdf ${OUT}/${GROUP_1}_Intergenic.mafs.gz > "${GROUP_1_PIPE}"
+gzip -cdf ${OUT}/${GROUP_2}_Intergenic.mafs.gz > "${GROUP_2_PIPE}"
 
 #   Merge shared.pos file with Fst output file
-#echo "WRAPPER: creating files for Shiny graphing..." >&2
-#Rscript ${SOURCE}/Wrappers/fst_bp.R \
-#    ${SOURCE} \
-#    ${OUT}/shared.pos \
-#    ${OUT}/${GROUP_1}.${GROUP_2}.fst \
-#    ${OUT}/${GROUP_1}_Intergenic.mafs \
-#    ${OUT}/${GROUP_2}_Intergenic.mafs \
-#    ${OUT}/"${PROJECT}".Fst.graph.me
-# why do we not zip the mafs again? sure this takes time, but the unzipped files are very large
+echo "WRAPPER: creating files for Shiny graphing..." >&2
+Rscript ${SOURCE}/Wrappers/fst_bp.R \
+   ${SOURCE} \
+   ${OUT}/shared.pos \
+   ${OUT}/${GROUP_1}.${GROUP_2}.fst \
+   "${GROUP_1_PIPE}" \
+   "${GROUP_2_PIPE}" \
+   ${OUT}/"${PROJECT}".Fst.graph.me
+
+#   Clean up the pipes
+find "${OUT}" -type p -exec rm{} \;

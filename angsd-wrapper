@@ -40,9 +40,13 @@ Usage:  $(basename $0) <wrapper> <config> \n\
 where:  <wrapper> is one of SFS, 2DSFS, Abbababa, Ancestral, Genotypes, Thetas, Inbreeding, Admixture
 and:    <config> is the corresponding configuration file \n\
 \n\
+This version of $(basename $0) uses ngsPopGen to calculate Fst \n\
+To use ANGSD to calculate Fst, please run the following command:\n\
+        git checkout master\n\
+\n\
 The following is a list of calls and what they do: \n\
     SFS         Site frequency spectrum \n\
-    Fst         Fst estimations \n\
+    2DSFS       Calculate 2D site frequency spectrum and estimate Fst\n\
     Abbababa    Abba baba test \n\
     Ancestral   Extract ancestral sequence from BAM file \n\
     Genotypes   Genotype likelihood calculations \n\
@@ -107,7 +111,7 @@ else # Everything else checks out, run the specified wrapper
             fi
             bash "${SOURCE}"/Wrappers/Site_Frequency_Spectrum.sh "${CONFIG}" "${SOURCE}"
             ;;
-        "Fst" )
+        "2DSFS" )
             #   Run the 2D site frequency spectrum wrapper script
             if ! [[ -f "${CONFIG}" ]]
             then
