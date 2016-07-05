@@ -54,6 +54,7 @@ The following is a list of calls and what they do: \n\
     Thetas      Estimate thetas and calculate neutrality test statistics \n\
     Inbreeding  Use ngsF to calculate per-individual inbreeding coefficients \n\
     Admixture   Perform admixture analysis \n\
+    SNP_Calling Call SNPs \n\
 \n\
 To download the example dataset, please run \n\
     $(basename $0) setup data \n\
@@ -182,6 +183,15 @@ else # Everything else checks out, run the specified wrapper
                 exit 1
             fi
             bash "${SOURCE}"/Wrappers/Admixture.sh "${CONFIG}" "${SOURCE}"
+            ;;
+        "SNP_Calling" )
+            #   Run the SNP_Calling wrapper script
+            if ! [[ -f "${CONFIG}" ]]
+            then
+                echo "Please specify a valid config file"
+                exit 1
+            fi
+            bash "${SOURCE}/Wrappers/SNP_Calling.sh" "${CONFIG}" "${SOURCE}"
             ;;
         "help" )
             bash "${SOURCE}"/Wrappers/Help.sh
