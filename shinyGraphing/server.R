@@ -114,9 +114,9 @@ shinyServer(
         dataInputThetas()
       }, 
       error = function(err) {
-        thetas <- fread("BKN_Diversity.thetas.gz.pestPG",
-                             sep = "\t",
-                             col.names = thetas.headers)
+        thetas <- fread(input = "BKN_Thetas.graph.me",
+                        sep = " ",
+                        header = TRUE)
       }
       )
 
@@ -192,9 +192,9 @@ shinyServer(
       thetas <- tryCatch({
         dataInputThetas()
       }, error = function(err) {
-        thetas <- fread("BKN_Diversity.thetas.gz.pestPG",
-                             sep = "\t",
-                             col.names = thetas.headers)
+          thetas <- fread(input = "BKN_Thetas.graph.me",
+                          sep = " ",
+                          header = TRUE)
       }
       )
       
@@ -291,9 +291,10 @@ shinyServer(
       thetas <- tryCatch({
         dataInputThetas()
       }, error = function(err) {
-        thetas <- read.table(file = "BKN_Diversity.thetas.gz.pestPG",
-                             sep = "\t",
-                             col.names=thetas.headers
+        thetas <- fread(
+            input = "BKN_Thetas.graph.me",
+            sep = " ",
+            header = TRUE
         )
       }
       )
@@ -330,10 +331,11 @@ shinyServer(
       thetas <- tryCatch({
         dataInputThetas()
       }, error = function(err) {
-        thetas <- read.table(file = "BKN_Diversity.thetas.gz.pestPG",
-                             sep = "\t",
-                             col.names = thetas.headers
-        )
+          thetas <- fread(
+              input = "BKN_Thetas.graph.me",
+              sep = " ",
+              header = TRUE
+          )
       }
       )
   
